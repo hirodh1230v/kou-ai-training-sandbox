@@ -11,6 +11,12 @@ export default function KoteiHiPage() {
     amount: "",
     paymentDay: "15"
   });
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    amount: "",
+    paymentDay: "15"
+  });
   const monthlyTotal = fixedCosts.reduce(
     (total, fixedCost) => total + fixedCost.amount,
     0
@@ -18,6 +24,10 @@ export default function KoteiHiPage() {
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateEditForm(field, value) {
+    setEditForm((current) => ({ ...current, [field]: value }));
   }
 
   function addFixedCost(event) {
@@ -32,6 +42,38 @@ export default function KoteiHiPage() {
 
     setFixedCosts((current) => [fixedCost, ...current]);
     setForm({ name: "", amount: "", paymentDay: "15" });
+  }
+
+  function startEditing(fixedCost) {
+    setEditingId(fixedCost.id);
+    setEditForm({
+      name: fixedCost.name,
+      amount: String(fixedCost.amount),
+      paymentDay: fixedCost.paymentDay
+    });
+  }
+
+  function cancelEditing() {
+    setEditingId(null);
+    setEditForm({ name: "", amount: "", paymentDay: "15" });
+  }
+
+  function saveEditing(event) {
+    event.preventDefault();
+
+    setFixedCosts((current) =>
+      current.map((fixedCost) =>
+        fixedCost.id === editingId
+          ? {
+              ...fixedCost,
+              name: editForm.name,
+              amount: Number(editForm.amount),
+              paymentDay: editForm.paymentDay
+            }
+          : fixedCost
+      )
+    );
+    cancelEditing();
   }
 
   return (
@@ -110,11 +152,72 @@ export default function KoteiHiPage() {
               ) : (
                 fixedCosts.map((fixedCost) => (
                   <div className="expense-item" key={fixedCost.id}>
-                    <div>
-                      <strong>{fixedCost.name}</strong>
-                      <small>{fixedCost.amount.toLocaleString()}円</small>
-                    </div>
-                    <span>{fixedCost.paymentDay}日</span>
+                    {editingId === fixedCost.id ? (
+                      <form className="expense-form" onSubmit={saveEditing}>
+                        <label>
+                          固定費の名前
+                          <input
+                            value={editForm.name}
+                            onChange={(event) =>
+                              updateEditForm("name", event.target.value)
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label>
+                          月額金額
+                          <input
+                            type="number"
+                            min="0"
+                            value={editForm.amount}
+                            onChange={(event) =>
+                              updateEditForm("amount", event.target.value)
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label>
+                          支払日
+                          <select
+                            value={editForm.paymentDay}
+                            onChange={(event) =>
+                              updateEditForm("paymentDay", event.target.value)
+                            }
+                          >
+                            {paymentDays.map((day) => (
+                              <option key={day} value={String(day)}>
+                                毎月{day}日
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <div className="expense-actions">
+                          <button type="submit">保存</button>
+                          <button type="button" onClick={cancelEditing}>
+                            キャンセル
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div>
+                          <strong>{fixedCost.name}</strong>
+                          <small>{fixedCost.amount.toLocaleString()}円</small>
+                        </div>
+                        <span>{fixedCost.paymentDay}日</span>
+                        <div className="expense-actions">
+                          <button
+                            type="button"
+                            onClick={() => startEditing(fixedCost)}
+                          >
+                            編集
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))
               )}
