@@ -11,6 +11,10 @@ export default function KoteiHiPage() {
     amount: "",
     paymentDay: "15"
   });
+  const monthlyTotal = fixedCosts.reduce(
+    (total, fixedCost) => total + fixedCost.amount,
+    0
+  );
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -93,6 +97,11 @@ export default function KoteiHiPage() {
             <div className="panel-heading">
               <p className="eyebrow">List</p>
               <h2>一覧エリア</h2>
+            </div>
+
+            <div className="total-card">
+              <span>月合計</span>
+              <strong>合計: {monthlyTotal.toLocaleString()}円</strong>
             </div>
 
             <div className="expense-list">
