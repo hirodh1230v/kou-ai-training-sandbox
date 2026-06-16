@@ -17,10 +17,23 @@ export default function KoteiHiPage() {
     amount: "",
     paymentDay: "15"
   });
+  const [previousMonthTotal, setPreviousMonthTotal] = useState(null);
   const monthlyTotal = fixedCosts.reduce(
     (total, fixedCost) => total + fixedCost.amount,
     0
   );
+  const monthlyDifference =
+    previousMonthTotal === null ? null : monthlyTotal - previousMonthTotal;
+  const differenceColor =
+    monthlyDifference === null || monthlyDifference === 0
+      ? "inherit"
+      : monthlyDifference < 0
+        ? "#18715f"
+        : "#b42318";
+  const monthlyDifferenceText =
+    monthlyDifference === null
+      ? ""
+      : `${monthlyDifference > 0 ? "+" : ""}${monthlyDifference.toLocaleString()}円`;
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -88,6 +101,10 @@ export default function KoteiHiPage() {
     setFixedCosts((current) =>
       current.filter((currentFixedCost) => currentFixedCost.id !== fixedCost.id)
     );
+  }
+
+  function confirmCurrentMonth() {
+    setPreviousMonthTotal(monthlyTotal);
   }
 
   return (
@@ -158,6 +175,26 @@ export default function KoteiHiPage() {
             <div className="total-card">
               <span>月合計</span>
               <strong>合計: {monthlyTotal.toLocaleString()}円</strong>
+            </div>
+
+            <div className="total-card">
+              <span>前月との比較</span>
+              {previousMonthTotal === null ? (
+                <p className="helper-text">比較できる前月データがありません。</p>
+              ) : (
+                <>
+                  <strong>先月: {previousMonthTotal.toLocaleString()}円</strong>
+                  <strong>今月: {monthlyTotal.toLocaleString()}円</strong>
+                  <strong style={{ color: differenceColor }}>
+                    差額: {monthlyDifferenceText}
+                  </strong>
+                </>
+              )}
+              <div className="expense-actions">
+                <button type="button" onClick={confirmCurrentMonth}>
+                  今月を確定
+                </button>
+              </div>
             </div>
 
             <div className="expense-list">
