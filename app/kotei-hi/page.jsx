@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 const paymentDays = Array.from({ length: 31 }, (_, index) => index + 1);
 
@@ -18,6 +27,8 @@ export default function KoteiHiPage() {
     paymentDay: "15"
   });
   const [previousMonthTotal, setPreviousMonthTotal] = useState(null);
+  const [monthlyHistory, setMonthlyHistory] = useState([]);
+  const [chartReady, setChartReady] = useState(false);
   const monthlyTotal = fixedCosts.reduce(
     (total, fixedCost) => total + fixedCost.amount,
     0
@@ -34,6 +45,17 @@ export default function KoteiHiPage() {
     monthlyDifference === null
       ? ""
       : `${monthlyDifference > 0 ? "+" : ""}${monthlyDifference.toLocaleString()}円`;
+  const chartData = [
+    ...monthlyHistory,
+    {
+      month: "今月",
+      total: monthlyTotal
+    }
+  ];
+
+  useEffect(() => {
+    setChartReady(true);
+  }, []);
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -104,6 +126,13 @@ export default function KoteiHiPage() {
   }
 
   function confirmCurrentMonth() {
+    setMonthlyHistory((current) => [
+      ...current,
+      {
+        month: `${current.length + 1}ヶ月目`,
+        total: monthlyTotal
+      }
+    ]);
     setPreviousMonthTotal(monthlyTotal);
   }
 
@@ -194,6 +223,39 @@ export default function KoteiHiPage() {
                 <button type="button" onClick={confirmCurrentMonth}>
                   今月を確定
                 </button>
+              </div>
+            </div>
+
+            <div className="total-card">
+              <span>月合計の推移</span>
+              <div style={{ height: 240, width: "100%" }}>
+                {chartReady && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 12, right: 12 }}>
+                      <CartesianGrid stroke="#315047" strokeDasharray="3 3" />
+                      <XAxis dataKey="month" stroke="#b8cbc4" />
+                      <YAxis
+                        stroke="#b8cbc4"
+                        tickFormatter={(value) => `${value.toLocaleString()}円`}
+                        width={86}
+                      />
+                      <Tooltip
+                        formatter={(value) => [
+                          `${value.toLocaleString()}円`,
+                          "月合計"
+                        ]}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#dff3ec"
+                        strokeWidth={3}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
