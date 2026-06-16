@@ -76,6 +76,20 @@ export default function KoteiHiPage() {
     cancelEditing();
   }
 
+  function deleteFixedCost(fixedCost) {
+    const confirmed = window.confirm(
+      `${fixedCost.name}を削除しますか？`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setFixedCosts((current) =>
+      current.filter((currentFixedCost) => currentFixedCost.id !== fixedCost.id)
+    );
+  }
+
   return (
     <main className="page-shell">
       <section className="intro-band">
@@ -214,6 +228,12 @@ export default function KoteiHiPage() {
                             onClick={() => startEditing(fixedCost)}
                           >
                             編集
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteFixedCost(fixedCost)}
+                          >
+                            削除
                           </button>
                         </div>
                       </>
